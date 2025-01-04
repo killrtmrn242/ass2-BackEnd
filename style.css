@@ -1,0 +1,39 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+.weather-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.weather-data {
+    display: flex;
+    justify-content: space-between;
+}
+
+#map {
+    width: 50%;
+    height: 300px;
+}
+
+.weather-info {
+    width: 45%;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.weather-info h3 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.weather-info p {
+    font-size: 18px;
+}

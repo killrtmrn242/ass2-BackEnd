@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBcB2yvG0Og1t_d_-HKKNYAB7SdWI5SWIc&callback=initMap" async defer></script>
+</head>
+<body>
+    <h1>Информация о городе</h1>
+    <input type="text" id="city" placeholder="Введите город">
+    <button onclick="getData()">Получить данные</button>
+
+    <div id="weather"></div>
+    <div id="news"></div>
+    <div id="currency"></div>
+    <div id="map" style="height: 400px; width: 100%;"></div>
+
+    <script>
+        let map;
+        let marker;
+
+        // Инициализация карты с начальным положением
+        function initMap() {
+            const defaultCoordinates = { lat: 51.5074, lng: -0.1278 }; // Лондон
+            map = new google.maps.Map(document.getElementById("map"), {
+                center: defaultCoordinates,
+                zoom: 10
+            });
+
+            marker = new google.maps.Marker({
+                position: defaultCoordinates,
+                map: map,
+                title: "London"
+            });
+        }
+
+        // Получение данных о погоде, новостях и курсе валют
+        async function getData() {
+            const city = document.getElementById('city').value;
+
+            if (!city) {
+                alert("Пожалуйста, введите город.");
+                return;
+            }
+
+            try {
+                // Получение данных о погоде
+                const weatherResponse = await fetch(`http://localhost:3000/weather?city=${city}`);
+                const weatherData = await weatherResponse.json();
+                if (weatherData.cod !== 200) {
+                    alert(`Ошибка: ${weatherData.message}`);
+                    return;
+                }
+                document.getElementById('weather').innerHTML = `
+                    <h2>Погода в ${city}</h2>
+                    <p>Температура: ${weatherData.main.temp}°C</p>
+                    <p>Описание: ${weatherData.weather[0].description}</p>
+                `;
+
+                // Получение новостей
+                const newsResponse = await fetch(`http://localhost:3000/news?city=${city}`);
+                const newsData = await newsResponse.json();
+                document.getElementById('news').innerHTML = `
+                    <h2>Новости</h2>
+                    ${newsData.articles.map(article => `<p>${article.title}</p>`).join('')}
+                `;
+
+                // Получение курса валют
+                const currencyResponse = await fetch(`http://localhost:3000/currency?currency=USD`);
+                const currencyData = await currencyResponse.json();
+                document.getElementById('currency').innerHTML = `
+                    <h2>Курс валют</h2>
+                    <p>1 USD = ${currencyData.rates.RUB} руб.</p>
+                `;
+
+                // Обновление карты
+                updateMap(city);
+            } catch (error) {
+                alert("Произошла ошибка при загрузке данных.");
+                console.error(error);
+            }
+        }
+
+        // Функция для обновления карты в зависимости от города
+        function updateMap(city) {
+            const geocoder = new google.maps.Geocoder();
+
+            geocoder.geocode({ 'address': city }, (results, status) => {
+                if (status === 'OK') {
+                    const location = results[0].geometry.location;
+
+                    // Обновляем центр карты
+                    map.setCenter(location);
+
+                    // Перемещаем маркер
+                    marker.setPosition(location);
+                    marker.setTitle(city);
+                } else {
+                    alert("Город не найден: " + status);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
